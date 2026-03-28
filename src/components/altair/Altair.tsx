@@ -44,28 +44,6 @@ function AltairComponent() {
   const { client, setConfig, setModel } = useLiveAPIContext();
 
   useEffect(() => {
-    setModel("models/gemini-3.1-flash-live-preview");
-    setConfig({
-      responseModalities: [Modality.AUDIO],
-      speechConfig: {
-        voiceConfig: { prebuiltVoiceConfig: { voiceName: "Aoede" } },
-      },
-      systemInstruction: {
-        parts: [
-          {
-            text: 'You are my helpful assistant. Any time I ask you for a graph call the "render_altair" function I have provided you. Dont ask for additional information just make your best judgement.',
-          },
-        ],
-      },
-      tools: [
-        // there is a free-tier quota for search
-        { googleSearch: {} },
-        { functionDeclarations: [declaration] },
-      ],
-    });
-  }, [setConfig, setModel]);
-
-  useEffect(() => {
     const onToolCall = (toolCall: LiveServerToolCall) => {
       if (!toolCall.functionCalls) {
         return;
