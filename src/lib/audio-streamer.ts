@@ -37,10 +37,18 @@ export class AudioStreamer {
 
   public onComplete = () => {};
 
+  public filterNode: BiquadFilterNode;
+
   constructor(public context: AudioContext) {
+    this.filterNode = this.context.createBiquadFilter();
     this.gainNode = this.context.createGain();
-    this.source = this.context.createBufferSource();
+    this.filterNode.type = "bandpass";
+    this.filterNode.frequency.value = 600;
+    this.filterNode.Q.value = 7.0;
+
+    this.filterNode.connect(this.gainNode);
     this.gainNode.connect(this.context.destination);
+    this.source = this.context.createBufferSource();
     this.addPCM16 = this.addPCM16.bind(this);
   }
 
@@ -162,7 +170,7 @@ export class AudioStreamer {
       }
 
       source.buffer = audioBuffer;
-      source.connect(this.gainNode);
+      source.connect(this.filterNode);
 
       const worklets = registeredWorklets.get(this.context);
 
