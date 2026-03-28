@@ -52,14 +52,14 @@ function ActiveCall({ selectedSpeaker, selectedSituation, onEnd, formatTime }: a
   const { connected, connect, disconnect, setConfig, setModel } = useLiveAPIContext();
   const [callTime, setCallTime] = useState(0);
   const dummyVideoRef = useRef<HTMLVideoElement>(null);
+  const personaMap: Record<string, { role: string, displayName: string }> = {
+    Puck:    { role: "boyfriend",  displayName: "James" },
+    Aoede:   { role: "girlfriend", displayName: "Alice" },
+    Iapetus: { role: "dad",        displayName: "Dad" },
+    Kore:    { role: "mom",        displayName: "Mom" }
+  };
 
   useEffect(() => {
-    const personaMap: Record<string, string> = {
-      Puck: "boyfriend",
-      Aoede: "girlfriend",
-      Iapetus: "dad",
-      Autonoe: "mom"
-    };
     const identity = personaMap[selectedSpeaker]
     const situationScript = SITUATION_CONTEXTS[selectedSituation];
     
@@ -76,7 +76,7 @@ function ActiveCall({ selectedSpeaker, selectedSituation, onEnd, formatTime }: a
         },
       systemInstruction: {
         parts: [{
-          text: `You are the user's ${identity}. Scenario: ${situationScript}. 
+          text: `You are the user's ${identity.role}. Scenario: ${situationScript}. 
                 Be brief, realistic, and use natural phone dialogue.`
         }],
       },
@@ -121,12 +121,11 @@ function ActiveCall({ selectedSpeaker, selectedSituation, onEnd, formatTime }: a
 
   return (
     <div className="iphone-call-screen">
-      <div className="notch"></div>
       <div className="call-container">
         <div className="call-content">
           <div className="profile-section">
             <h2 className="caller-name">
-              {selectedSpeaker === "Puck" ? "Your Partner" : "Your Parent"}
+              {personaMap[selectedSpeaker]?.displayName}
             </h2>
             <p className="call-timer">
               {connected ? formatTime(callTime) : "Connecting..."}
@@ -148,21 +147,6 @@ function ActiveCall({ selectedSpeaker, selectedSituation, onEnd, formatTime }: a
           <button className="end-call-btn" onClick={onEnd}>
             <MdCallEnd className="end-icon" />
           </button>
-
-          <div className="debug-console" style={{  
-            background: "#1e1e1e",
-            color: "white",
-            padding: "10px"
-          }}>
-            <h3>DEBUG CONSOLE</h3>
-            <SidePanel />
-            <Altair />
-            <ControlTray 
-              videoRef={dummyVideoRef} 
-              supportsVideo={false} 
-              onVideoStreamChange={() => {}} 
-            />
-          </div>
         </div>
       </div>
     </div>
@@ -216,7 +200,7 @@ function App() {
 
       {step === 2 && (
         <div className="speaker-selection">
-          <h1>Who should call?</h1>
+          <h1>Who to dial?</h1>
           <div className="button-group">
             
             {/* 1. Show Partner options for 'stalker' or 'pressure' */}
@@ -231,12 +215,12 @@ function App() {
             {(selectedSituation === "stalker" || selectedSituation === "party") && (
               <>
                 <button onClick={() => {setSelectedSpeaker("Iapetus"); setStep(3)}}>Dad</button>
-                <button onClick={() => {setSelectedSpeaker("Autonoe"); setStep(3)}}>Mom</button>
+                <button onClick={() => {setSelectedSpeaker("Kore"); setStep(3)}}>Mom</button>
               </>
             )}
 
           </div>
-          <button className="back-btn" onClick={() => setStep(1)}>← Back</button>
+          <button className="back-btn" onClick={() => setStep(1)}>Back</button>
         </div>
       )}
 
