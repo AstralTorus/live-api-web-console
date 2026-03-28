@@ -71,7 +71,7 @@ function ActiveCall({ selectedSpeaker, selectedSituation, userName, onEnd, forma
         },
       systemInstruction: {
         parts: [{
-          text: `You are the user's ${identity.role}. Scenario: ${situationScript}. 
+          text: `You are the user's ${identity.role}. The user's scenario: ${situationScript}. 
                 Be brief, realistic, and use natural phone dialogue.
                 The user's name is ${userName}, and you should refer to them by name often.`
         }],
