@@ -48,7 +48,7 @@ const SITUATION_CONTEXTS: Record<string, string> = {
 
 // --- 1. THE ACTUAL CALL COMPONENT ---
 // This component lives INSIDE the Provider so it can use 'disconnect()'
-function ActiveCall({ selectedSpeaker, selectedSituation, onEnd, formatTime }: any) {
+function ActiveCall({ selectedSpeaker, selectedSituation, userName, onEnd, formatTime }: any) {
   const { connected, connect, disconnect, setConfig, setModel } = useLiveAPIContext();
   const [callTime, setCallTime] = useState(0);
   const dummyVideoRef = useRef<HTMLVideoElement>(null);
@@ -62,8 +62,6 @@ function ActiveCall({ selectedSpeaker, selectedSituation, onEnd, formatTime }: a
   useEffect(() => {
     const identity = personaMap[selectedSpeaker]
     const situationScript = SITUATION_CONTEXTS[selectedSituation];
-    
-  
       setModel("models/gemini-2.5-flash-native-audio-preview-12-2025");
       setConfig({
         responseModalities: [Modality.AUDIO],
@@ -77,7 +75,8 @@ function ActiveCall({ selectedSpeaker, selectedSituation, onEnd, formatTime }: a
       systemInstruction: {
         parts: [{
           text: `You are the user's ${identity.role}. Scenario: ${situationScript}. 
-                Be brief, realistic, and use natural phone dialogue.`
+                Be brief, realistic, and use natural phone dialogue.
+                The user's name is ${userName}, and you should refer to them by name often.`
         }],
       },
     });
@@ -148,11 +147,7 @@ function ActiveCall({ selectedSpeaker, selectedSituation, onEnd, formatTime }: a
             <MdCallEnd className="end-icon" />
           </button>
 
-          <div className="debug-console" style={{  
-            background: "#1e1e1e",
-            color: "white",
-            padding: "10px"
-          }}>
+          <div style={{ display: "none" }}>
             <h3>DEBUG CONSOLE</h3>
             <SidePanel />
             <Altair />
@@ -180,25 +175,58 @@ function App() {
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
-  const personaPrompt = selectedSpeaker === "Puck" 
-    ? "You are the user's partner. You are 2 minutes away. Keep responses brief (10 words max) and protective."
-    : "You are the user's parent. You need them to come home for a family emergency. Be firm and brief.";
+  const [userName, setUserName] = useState<string>("");
+  const [tempName, setTempName] = useState<string>("");
+
+  useEffect(() => {
+    const saved = localStorage.getItem("safety_dial_user");
+    if (saved) {
+      setUserName(saved);
+    } else {
+      setStep(0);
+    }
+  }, []);
+
+  const handleSaveName = () => {
+    if (tempName.trim()) {
+      localStorage.setItem("safety_dial_user", tempName);
+      setUserName(tempName);
+      setStep(1);
+    }
+  };
+
+  const handleNameReset = () => {
+    localStorage.removeItem("safety_dial_user");
+    setUserName("");
+    setStep(0);
+  };
 
   const apiOptions = {
     apiKey: API_KEY,
     model: "models/gemini-2.5-flash-native-audio-preview-12-2025",
-    generationConfig: {
-      responseModalities: [Modality.AUDIO],
-    },
-    speechConfig: { 
-      voiceConfig: 
-        { prebuiltVoiceConfig: { voiceName: selectedSpeaker }, },
-    },
-    systemInstruction: { parts: [{ text: personaPrompt }] }
   };
 
   return (
     <div className="App">
+      {step === 0 && (
+        <div className="name-entry-screen">
+          <h1>Safety Dial</h1>
+          <p className="subtitle">What should your callers call you? If you are with people you know, we suggest your real name; if you are with strangers, we suggest a different name.</p>
+          <div className="input-group">
+            <input 
+              type="text" 
+              placeholder="Your Name" 
+              value={tempName}
+              onChange={(e) => setTempName(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSaveName()}
+            />
+            <button className="button" onClick={handleSaveName} disabled={!tempName.trim()}>
+              Next
+            </button>
+          </div>
+        </div>
+      )}
+
       {step === 1 && (
         <div className="situation-selection">
           <h1>Safety Dial</h1>
@@ -209,6 +237,10 @@ function App() {
             <button onClick={() => {setSelectedSituation("stalker"); setStep(2)}}>Someone is following me</button>
             <button onClick={() => {setSelectedSituation("party"); setStep(2)}}>I need to leave a party</button>
             <button onClick={() => {setSelectedSituation("pressure"); setStep(2)}}>Someone is pressuring me to go out with them</button>
+          </div>
+          <div className="user-profile-header">
+            <p className="subtitle" style ={{fontSize: "1.55rem"}}>Calling as <strong>{userName}</strong></p>
+            <button className="back-btn" onClick={handleNameReset}>Change Name</button>
           </div>
         </div>
       )}
@@ -244,6 +276,7 @@ function App() {
           <ActiveCall 
             selectedSpeaker={selectedSpeaker} 
             selectedSituation={selectedSituation}
+            userName={userName}
             onEnd={() => setStep(1)}
             formatTime={formatTime}
           />
