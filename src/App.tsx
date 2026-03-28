@@ -147,6 +147,21 @@ function ActiveCall({ selectedSpeaker, selectedSituation, onEnd, formatTime }: a
           <button className="end-call-btn" onClick={onEnd}>
             <MdCallEnd className="end-icon" />
           </button>
+
+          <div className="debug-console" style={{  
+            background: "#1e1e1e",
+            color: "white",
+            padding: "10px"
+          }}>
+            <h3>DEBUG CONSOLE</h3>
+            <SidePanel />
+            <Altair />
+            <ControlTray 
+              videoRef={dummyVideoRef} 
+              supportsVideo={false} 
+              onVideoStreamChange={() => {}} 
+            />
+          </div>
         </div>
       </div>
     </div>
