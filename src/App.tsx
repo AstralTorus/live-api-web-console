@@ -18,14 +18,11 @@ import { useRef, useState, useEffect } from "react";
 import "./App.scss";
 import { LiveAPIProvider, useLiveAPIContext } from "./contexts/LiveAPIContext";
 import {
-  LiveServerToolCall,
   Modality,
-  Type,
 } from "@google/genai";
 import SidePanel from "./components/side-panel/SidePanel";
-import { Altair } from "./components/altair/Altair";
 import ControlTray from "./components/control-tray/ControlTray";
-import { MdMicOff, MdKeyboard, MdVolumeUp, MdAddCall, MdVideocam, MdContactMail, MdCallEnd, MdInfo } from "react-icons/md";
+import { MdMicOff, MdKeyboard, MdVolumeUp, MdAddCall, MdVideocam, MdContactMail, MdCallEnd } from "react-icons/md";
 
 const API_KEY = process.env.REACT_APP_GEMINI_API_KEY as string;
 
@@ -150,7 +147,6 @@ function ActiveCall({ selectedSpeaker, selectedSituation, userName, onEnd, forma
           <div style={{ display: "none" }}>
             <h3>DEBUG CONSOLE</h3>
             <SidePanel />
-            <Altair />
             <ControlTray 
               videoRef={dummyVideoRef} 
               supportsVideo={false} 
