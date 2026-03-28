@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import "./App.scss";
 import { LiveAPIProvider } from "./contexts/LiveAPIContext";
 import SidePanel from "./components/side-panel/SidePanel";
@@ -32,6 +32,9 @@ const apiOptions: LiveClientOptions = {
 };
 
 function App() {
+  const [step, setStep] = useState(1);
+  const [selectedSituation, setSelectedSituation] = useState("");
+  const [selectedSpeaker, setSelectedSpeaker] = useState("Puck");
 
   const videoRef = useRef<HTMLVideoElement>(null);
 
