@@ -29,6 +29,23 @@ import { MdMicOff, MdKeyboard, MdVolumeUp, MdAddCall, MdVideocam, MdContactMail,
 
 const API_KEY = process.env.REACT_APP_GEMINI_API_KEY as string;
 
+const SITUATION_CONTEXTS: Record<string, string> = {
+  stalker: `The user is being followed. Your goal is to deter the follower by showing the user is not alone and someone will be there. 
+            Act as if you are 1 minute away and looking for them.
+            Say things like 'I'm almost there' or 'My car is right around the corner'. 
+            Sound protective and slightly urgent, and keep talking if the user needs to stall and ask questions about where you are.`,
+  
+  party: `The user feels unsafe at a party. Your goal is to give the user an excuse to leave without being questioned. 
+          Act as if there is a family situation or a strict curfew issue. 
+          Say things like 'You were supposed to be back 10 minutes ago' or 'The basement is flooding, I need your help now.' 
+          Sound firm and impatient, and stay stern even if the user tries to insist on staying for the act.`,
+  
+  pressure: `The user is being pressured socially or romantically. Your goal is to cut off the harasser and show that the user already has a partner. 
+             Act as if you are a partner who was wondering where they are and needs them home. 
+             Say things like 'Are you still out? The big game is about to begin' or 'I thought we had plans for dinner today.'
+             Sound curious and loving, and talk like you are the user's partner as if it's obvious, using terms of endearment.`
+};
+
 // --- 1. THE ACTUAL CALL COMPONENT ---
 // This component lives INSIDE the Provider so it can use 'disconnect()'
 function ActiveCall({ selectedSpeaker, selectedSituation, onEnd, formatTime }: any) {
@@ -37,7 +54,15 @@ function ActiveCall({ selectedSpeaker, selectedSituation, onEnd, formatTime }: a
   const dummyVideoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    const persona = selectedSpeaker === "Puck" || selectedSpeaker === "Aoede" ? "partner" : "parent";
+    const personaMap: Record<string, string> = {
+      Puck: "boyfriend",
+      Aoede: "girlfriend",
+      Iapetus: "dad",
+      Autonoe: "mom"
+    };
+    const identity = personaMap[selectedSpeaker]
+    const situationScript = SITUATION_CONTEXTS[selectedSituation];
+    
   
       setModel("models/gemini-2.5-flash-native-audio-preview-12-2025");
       setConfig({
@@ -51,10 +76,8 @@ function ActiveCall({ selectedSpeaker, selectedSituation, onEnd, formatTime }: a
         },
       systemInstruction: {
         parts: [{
-          text: `You are the user's ${persona}. Scenario: ${selectedSituation}. 
-                 Be brief, realistic, and use natural phone dialogue. 
-                 If you are a parent, you are firm and need them home. 
-                 If you are a partner, you are protective and arriving now.`
+          text: `You are the user's ${identity}. Scenario: ${situationScript}. 
+                Be brief, realistic, and use natural phone dialogue.`
         }],
       },
     });
